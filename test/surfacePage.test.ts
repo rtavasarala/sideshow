@@ -58,7 +58,11 @@ test("the CSP locks down default-src and allowlists exactly the known CDNs", () 
   }
 
   // the sandbox runs at an opaque origin, so the server origin is what lets
-  // uploaded assets embed — it must be present in img/media, and only there
+  // uploaded assets and self-hosted fonts embed.
+  assert.ok(
+    /font-src[^;]*\bhttp:\/\/localhost:4000\b/.test(policy),
+    "origin missing from font-src",
+  );
   assert.ok(/img-src[^;]*\bhttp:\/\/localhost:4000\b/.test(policy), "origin missing from img-src");
   assert.ok(
     /media-src[^;]*\bhttp:\/\/localhost:4000\b/.test(policy),
@@ -207,6 +211,8 @@ test("a mermaid page pins mermaid's derived colors to the scheme so the whole di
   };
   const dv = varsOf(dark);
   const lv = varsOf(light);
+  assert.ok(csp(dark).includes(`font-src ${ALLOWED_CDNS.join(" ")} data: ${ORIGIN}`));
+  assert.match(dark, /document\.fonts\.load\('14px "Timeless Sans"'\)/);
 
   // darkMode is pinned to the resolved scheme. Unset, mermaid derives every
   // variable we don't set (row stripes, cScale ramps, edge-label bg) for a
@@ -238,6 +244,41 @@ test("a mermaid page pins mermaid's derived colors to the scheme so the whole di
   ]) {
     assert.equal(dv[k], theme.dark.text, `${k} pinned to text (dark)`);
     assert.equal(lv[k], theme.light.text, `${k} pinned to text (light)`);
+  }
+});
+
+test("html and rich surfaces inject the Timeless faces and tokens at the base URL", () => {
+  const baseUrl = `${ORIGIN}/u/alice`;
+  const html = renderHtmlPage({
+    title: "t",
+    html: "<h1>heading</h1>",
+    origin: ORIGIN,
+    baseUrl,
+  });
+  assert.ok(
+    html.includes(`url("${baseUrl}/fonts/TimelessSans-SansRegular.woff2") format("woff2")`),
+  );
+  assert.ok(html.includes('--font-serif:"Timeless Serif Text"'));
+  assert.match(html, /h1,h2\{font-family:var\(--font-display\);font-weight:500/);
+
+  const rich = renderSandboxedPart({ body: "x", css: "", origin: ORIGIN, baseUrl });
+  assert.ok(rich.includes("@font-face"));
+  assert.ok(
+    rich.includes(`url("${baseUrl}/fonts/TimelessSans-SansRegular.woff2") format("woff2")`),
+  );
+  assert.ok(rich.includes('--font-serif:"Timeless Serif Text"'));
+});
+
+test("html, rich, and Mermaid CSPs allow fonts from the server origin", () => {
+  const html = renderHtmlPage({ title: "t", html: "<p>x</p>", origin: ORIGIN });
+  const rich = renderSandboxedPart({ body: "x", css: "", origin: ORIGIN });
+  const mermaid = renderMermaidPage({ mermaid: "graph TD; A-->B", origin: ORIGIN });
+
+  for (const doc of [html, rich, mermaid]) {
+    assert.ok(
+      /font-src[^;]*\bhttp:\/\/localhost:4000\b/.test(csp(doc)),
+      "font-src should include the document origin",
+    );
   }
 });
 

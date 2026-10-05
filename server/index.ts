@@ -29,6 +29,7 @@ const [viewerHtml, guideMarkdown, setupText, agentHowtoText, pkgJson] = await Pr
 
 const pr = process.env.SIDESHOW_PUBLIC_READ;
 const publicRead = pr === "session" || pr === "full" ? pr : undefined;
+const fontsDir = process.env.SIDESHOW_FONTS_DIR ?? join(root, "public", "fonts");
 
 // Storage backend. SQLite (via node:sqlite) is the default so the local server
 // mirrors the Cloudflare Durable Object deploy — both run the same SqlStore.
@@ -75,6 +76,14 @@ const app = createApp({
   setupText,
   agentHowtoText,
   authToken: process.env.SIDESHOW_TOKEN,
+  fontFile: async (file) => {
+    try {
+      return await readFile(join(fontsDir, file));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw error;
+    }
+  },
   publicRead,
   // SIDESHOW_VERSION fakes the running version (manual testing of the
   // notice); set it to the empty string to disable the update check

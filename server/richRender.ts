@@ -123,22 +123,43 @@ body {
   padding: 4px 16px 14px;
   background: transparent;
   color: var(--text);
-  font:
-    14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font: 16px/1.6 var(--font-serif);
   overflow-wrap: anywhere;
 }
-h1, h2, h3, h4 { line-height: 1.3; margin: 1.2em 0 0.5em; font-weight: 600; }
-h1 { font-size: 1.5em; }
-h2 { font-size: 1.25em; }
-h3 { font-size: 1.1em; }
+h1, h2, h3, h4 { margin: 1.2em 0 0.5em; }
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+h1 { font-size: 1.75em; }
+h2 { font-size: 1.375em; }
+h3, h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.3;
+}
+h3 { font-size: 1.125em; }
+h4 { font-size: 1em; }
 body > :first-child { margin-top: 0.4em; }
 p, ul, ol, blockquote, table { margin: 0.5em 0; }
+p, li, blockquote, dd { max-width: 68ch; }
 ul, ol { padding-left: 1.5em; }
 li { margin: 0.2em 0; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-position: from-font;
+  text-decoration-thickness: from-font;
+  text-underline-offset: 0.15em;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+}
+a:hover { text-decoration-color: currentColor; }
+strong, b { font-weight: 600; }
 code {
-  font: 0.875em ui-monospace, monospace;
+  font: 0.875em var(--font-mono);
   background: var(--hover);
   padding: 0.12em 0.35em;
   border-radius: 4px;
@@ -156,10 +177,15 @@ blockquote {
   padding-left: 12px;
   border-left: 2px solid var(--border-2);
   color: var(--muted);
+  font-style: italic;
 }
-table { border-collapse: collapse; font-size: 13px; }
+table {
+  border-collapse: collapse;
+  font: 13.5px var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
 th, td { border: 0.5px solid var(--border); padding: 4px 8px; text-align: left; }
-th { background: var(--hover); }
+th { background: var(--hover); font-weight: 500; }
 img { max-width: 100%; height: auto; border-radius: 6px; }
 hr { border: none; border-top: 0.5px solid var(--border); margin: 1em 0; }
 `;
@@ -215,11 +241,11 @@ body { margin: 0; background: var(--term-bg); }
 .term-dots span:nth-child(1) { background: #ff5f56; }
 .term-dots span:nth-child(2) { background: #ffbd2e; }
 .term-dots span:nth-child(3) { background: #27c93f; }
-.term-title { font-size: 11.5px; color: var(--term-title); font-family: ui-monospace, monospace; }
+.term-title { font-size: 11.5px; color: var(--term-title); font-family: var(--font-mono); }
 .term-body {
   margin: 0; padding: 12px 14px; overflow-x: auto; white-space: pre;
   color: var(--term-fg);
-  font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font: 12.5px/1.5 var(--font-mono);
   tab-size: 8;
 }
 `;
@@ -262,16 +288,16 @@ body { margin: 0; padding: 0; background: transparent; }
   border-bottom: 0; border-radius: 8px 8px 0 0;
 }
 .code-filename {
-  flex: 1; font: 500 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  flex: 1; font: 500 12px/1.4 var(--font-mono);
   color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .code-lang {
-  font: 400 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 400 11px/1.4 var(--font-mono);
   color: var(--faint); background: var(--hover); padding: 1px 6px;
   border-radius: 4px; text-transform: lowercase;
 }
 .copy-btn {
-  font: 400 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 400 12px/1.4 var(--font-sans);
   color: var(--muted); background: var(--hover); border: 0.5px solid var(--border);
   border-radius: 5px; padding: 2px 9px; cursor: pointer; white-space: nowrap;
   transition: color 0.12s;
@@ -286,7 +312,7 @@ body { margin: 0; padding: 0; background: transparent; }
 pre.shiki, pre.plain {
   margin: 0; padding: 12px 14px; background: var(--panel);
   border: 0.5px solid var(--border); border-radius: 8px; overflow: auto;
-  font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 12.5px/1.5 var(--font-mono);
   counter-reset: line;
 }
 .code-wrap.code-wrap-head pre.shiki,

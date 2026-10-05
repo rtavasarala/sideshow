@@ -350,7 +350,10 @@ compose with) so it adapts to light/dark automatically. Never hardcode colors;
 - Text: `--color-text-primary|secondary|tertiary`, plus the same semantic variants
 - Borders: `--color-border-tertiary` (default, faint), `-secondary`, `-primary`,
   plus semantic variants
-- Fonts: `--font-sans|serif|mono`; radius: `--border-radius-md|lg|xl` (8/12/16px)
+- Fonts: use `--font-sans` for UI and body text, `--font-serif` for long reading
+  prose, `--font-display` for headlines at least 20px and big numbers,
+  `--font-grotesk` for wordmarks, overlines and small-caps labels, and
+  `--font-mono` for code. Radius: `--border-radius-md|lg|xl` (8/12/16px).
 
 Mental test: if the background were near-black, would every element still read?
 

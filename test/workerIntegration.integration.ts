@@ -100,6 +100,7 @@ test(
     worker = await startWorker(persistTo, { SIDESHOW_TOKEN: TOKEN });
 
     assert.equal((await worker.fetch("/api/sessions")).status, 401);
+    assert.equal((await worker.fetch("/fonts/TimelessSans-SansRegular.woff2")).status, 404);
 
     const marker = '<p id="worker-marker">real workerd render</p>';
     const post = await expectJson<PostResult>(

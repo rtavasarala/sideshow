@@ -1,5 +1,7 @@
 node_modules/
 data/
+public/fonts/*
+!public/fonts/.gitkeep
 .pi/
 *.log
 .DS_Store

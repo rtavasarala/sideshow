@@ -1,4 +1,5 @@
 import { kitAssets } from "./kits.ts";
+import { FONT_STACKS, fontFaceCss, fontTokenCss } from "./typography.ts";
 import {
   type Mode,
   type Palette,
@@ -59,7 +60,7 @@ function buildCsp(origin: string): string {
     `default-src 'none'`,
     `script-src 'unsafe-inline' ${cdns}`,
     `style-src 'unsafe-inline' ${cdns}`,
-    `font-src ${cdns} data:`,
+    `font-src ${cdns} data: ${origin}`,
     `img-src https: data: blob: ${origin}`,
     `connect-src ${cdns}`,
     `media-src https: data: blob: ${origin}`,
@@ -70,16 +71,20 @@ function buildCsp(origin: string): string {
 // (--color-*) are theme-dependent and injected separately by renderHtmlPage via
 // tokenThemeCss(theme); names match Claude's widget surface either way so agents
 // reuse the same muscle memory.
-const TOKENS_CSS = `
+const TOKENS_CSS = (baseUrl: string) => `
+${fontFaceCss(baseUrl)}
+${fontTokenCss()}
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-xl: 16px;
 }
-html { box-sizing: border-box; scrollbar-width: none; }
+html {
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 *, *::before, *::after { box-sizing: inherit; }
 body {
@@ -100,6 +105,9 @@ body {
 // opt-in via classes.
 const KIT_CSS = `
 :root { color-scheme: light dark; }
+h1,h2{font-family:var(--font-display);font-weight:500;line-height:1.15;letter-spacing:-0.015em;text-wrap:balance}
+h3,h4,h5,h6{font-family:var(--font-sans);font-weight:500;line-height:1.3}
+table{font-variant-numeric:tabular-nums}
 button {
   font: 500 14px/1.4 var(--font-sans);
   color: var(--color-text-primary);
@@ -299,7 +307,8 @@ function buildRichCsp(origin: string): string {
     `script-src 'unsafe-inline'`,
     `style-src 'unsafe-inline'`,
     `img-src https: data: blob: ${origin}`,
-    `font-src data:`,
+    // Fonts are allowed from this origin only, like img-src above.
+    `font-src data: ${origin}`,
   ].join("; ");
 }
 
@@ -323,6 +332,7 @@ export function renderSandboxedPart(doc: {
   body: string;
   css: string;
   origin: string;
+  baseUrl?: string;
   theme?: Theme | string;
   mode?: Mode;
 }): string {
@@ -339,7 +349,7 @@ export function renderSandboxedPart(doc: {
      img-src in buildRichCsp allows that origin. (html surfaces don't need this —
      they load via /s/:id, whose URL is already the base.) -->
 <base href="${doc.origin}/">
-<style>${viewerThemeCss(theme, doc.mode)}${doc.css}${colorSchemeCss(doc.mode)}</style>
+<style>${viewerThemeCss(theme, doc.mode)}${fontFaceCss(doc.baseUrl ?? doc.origin)}${fontTokenCss()}${doc.css}${colorSchemeCss(doc.mode)}</style>
 </head>
 <body>
 ${doc.body}
@@ -364,7 +374,7 @@ body { margin: 0; padding: 14px 16px; background: transparent; text-align: cente
 svg { max-width: 100%; height: auto; }
 .mmd-error {
   text-align: left; color: var(--danger);
-  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 13px/1.5 var(--font-mono);
 }
 .mmd-error pre {
   margin: 6px 0 0; padding: 8px 10px; color: var(--text);
@@ -404,7 +414,7 @@ function mermaidThemeVars(
       // Pin the scheme so mermaid's darkMode-branched derivations resolve the
       // same way the palette we read from did (both come from `mode`).
       darkMode: mode === "dark",
-      fontFamily: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`,
+      fontFamily: FONT_STACKS.sans,
       fontSize: "14px",
       // The canvas mermaid derives against. Several colors default to
       // invert(background) — most visibly `arrowheadColor` — so a pinned value
@@ -470,6 +480,7 @@ const MERMAID_CDN = "https://esm.sh/mermaid@11";
 export function renderMermaidPage(doc: {
   mermaid: string;
   origin: string;
+  baseUrl?: string;
   theme?: Theme | string;
   mode?: Mode;
 }): string {
@@ -505,6 +516,12 @@ mermaid.initialize({
 });
 const el = document.getElementById('m');
 try {
+  await Promise.race([
+    document.fonts.load('14px "Timeless Sans"'),
+    new Promise(r => setTimeout(r, 1500)),
+  ]);
+} catch {}
+try {
   const { svg } = await mermaid.render('mmd-svg', src);
   el.innerHTML = svg;
 } catch (e) {
@@ -523,7 +540,7 @@ try {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="${buildCsp(doc.origin)}">
 <base href="${doc.origin}/">
-<style>${viewerThemeCss(theme, doc.mode)}${MERMAID_CSS}${colorSchemeCss(doc.mode)}</style>
+<style>${viewerThemeCss(theme, doc.mode)}${fontFaceCss(doc.baseUrl ?? doc.origin)}${fontTokenCss()}${MERMAID_CSS}${colorSchemeCss(doc.mode)}</style>
 </head>
 <body>
 <div id="m"></div>
@@ -537,6 +554,7 @@ export function renderHtmlPage(doc: {
   title: string;
   html: string;
   origin: string;
+  baseUrl?: string;
   theme?: Theme | string;
   // Pins the iframe's color scheme to the one the chrome resolved (see Mode).
   // Omitted → the scheme follows the OS via tokenThemeCss's media query.
@@ -556,7 +574,7 @@ export function renderHtmlPage(doc: {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="${buildCsp(doc.origin)}">
 <title>${escapeHtml(doc.title)}</title>
-<style>${tokenThemeCss(theme, doc.mode)}${TOKENS_CSS}${KIT_CSS}${kitAccentCss(doc.mode)}${kit.css}${colorSchemeCss(doc.mode)}</style>
+<style>${tokenThemeCss(theme, doc.mode)}${TOKENS_CSS(doc.baseUrl ?? doc.origin)}${KIT_CSS}${kitAccentCss(doc.mode)}${kit.css}${colorSchemeCss(doc.mode)}</style>
 </head>
 <body>
 ${SVG_DEFS}

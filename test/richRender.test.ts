@@ -20,6 +20,14 @@ test("renderMarkdown: links get target=_blank and rel=noopener noreferrer", asyn
   assert.match(body, /href="https:\/\/example\.com"/);
 });
 
+test("renderMarkdown: prose uses serif tokens and the type scale", async () => {
+  const { css } = await renderMarkdown({ kind: "markdown", markdown: "# A heading" });
+  assert.match(css, /font: 16px\/1\.6 var\(--font-serif\)/);
+  assert.match(css, /h1 \{ font-size: 1\.75em; \}/);
+  assert.match(css, /font-family: var\(--font-display\)/);
+  assert.match(css, /max-width: 68ch/);
+});
+
 test("renderMarkdown: code blocks are highlighted and inline code escaped", async () => {
   const md: MarkdownSurface = { kind: "markdown", markdown: "    `let x = 1`" };
   const { body } = await renderMarkdown(md);

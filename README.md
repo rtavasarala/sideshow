@@ -176,6 +176,7 @@ browser, so the action is shown but disabled.
   detail: CLI, MCP, Pi, plain HTTP, and the Claude Code skill + plugin.
 - **[Deploying to Cloudflare](docs/deploying.md)** — run a shared, tokened
   instance.
+- **[Timeless fonts](docs/fonts.md)** — install the optional local font files.
 - **[AGENTS.md](AGENTS.md)** — architecture and contributor guide.
 - **Terminal surface (alpha).** [`sideshow-term/`](sideshow-term/) is an early
   sibling that renders to a TUI instead of the browser. APIs are unstable.

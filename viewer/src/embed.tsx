@@ -40,7 +40,10 @@ const EMBED_BASE_CSS = `
   background: var(--bg);
   color: var(--text);
   -webkit-text-size-adjust: 100%;
-  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font: 14px/1.5 var(--font-sans);
 }
 .ss-engine-root { position: absolute; inset: 0; }
 `;

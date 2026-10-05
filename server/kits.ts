@@ -76,7 +76,7 @@ const SLIDES_CSS = `
 .deck>.slide{grid-area:1/1;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease,visibility 0s linear .3s}
 .deck>.slide.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s ease}
 @media (prefers-reduced-motion:reduce){.deck>.slide{transition:none}}
-.deck>.slide h2{font:500 22px/1.3 var(--font-sans);margin:0 0 14px}
+.deck>.slide h2{font:500 22px/1.3 var(--font-display);margin:0 0 14px}
 .deck-ctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:18px;padding-top:14px;border-top:1px solid var(--color-border-secondary)}
 .deck-dots{display:inline-flex;gap:7px}
 .deck-dots i{width:7px;height:7px;border-radius:999px;background:var(--color-border-primary);cursor:pointer}
