@@ -134,14 +134,25 @@ input[type=checkbox], input[type=radio], input[type=range], progress {
   accent-color: var(--color-border-info);
 }
 svg { font-family: var(--font-sans); fill: var(--color-text-primary); }
+svg text { font-variant-numeric: tabular-nums; }
 .t { font-size: 14px; }
 .ts { font-size: 12px; fill: var(--color-text-secondary); }
 .th { font-size: 14px; font-weight: 500; }
-.box { fill: var(--color-background-secondary); stroke: var(--color-border-tertiary); rx: 8px; }
-.arr { stroke: var(--color-text-secondary); stroke-width: 1.2; fill: none; }
+.box { fill: var(--color-background-secondary); stroke: var(--color-border-tertiary); stroke-width: 1; rx: 6px; }
+.arr { stroke: var(--color-text-secondary); stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; fill: none; }
 .leader { stroke: var(--color-border-secondary); stroke-width: 1; stroke-dasharray: 3 4; fill: none; }
 .node { cursor: pointer; }
 .node:hover { opacity: 0.75; }
+svg .name { font-family: var(--font-sans); font-size: 13px; font-weight: 500; fill: var(--color-text-primary); }
+svg .sub { font-family: var(--font-mono); font-size: 10.5px; fill: var(--color-text-secondary); }
+svg .eyebrow { font-family: var(--font-grotesk); font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; fill: var(--color-text-tertiary); }
+svg .lbl { font-family: var(--font-grotesk); font-size: 10px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; fill: var(--color-text-secondary); }
+svg .mask { fill: var(--color-background-primary); stroke: none; rx: 2px; }
+svg .zone { fill: none; stroke: var(--color-border-secondary); stroke-width: 1; stroke-dasharray: 4 3; rx: 8px; }
+svg .focal, svg .focal .box { fill: var(--color-background-info); stroke: var(--color-border-info); stroke-width: 1.2; }
+svg .focal text, svg text.focal { fill: var(--color-text-info); stroke: none; }
+svg .dashed { stroke-dasharray: 5 4; }
+svg .callout { font-family: var(--font-serif); font-size: 13px; font-style: italic; fill: var(--color-text-secondary); }
 .c-blue, .c-blue .box { fill: var(--color-background-info); stroke: var(--color-border-info); }
 .c-blue text, text.c-blue { fill: var(--color-text-info); stroke: none; }
 .c-teal, .c-teal .box { fill: var(--c-teal-bg); stroke: var(--c-teal-line); }
@@ -161,7 +172,7 @@ svg { font-family: var(--font-sans); fill: var(--color-text-primary); }
 // Shared SVG defs injected into every html-surface doc. Inline SVGs anywhere in
 // the document can reference these by id; the arrowhead inherits the
 // referencing line's stroke color via context-stroke.
-const SVG_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs></svg>`;
+const SVG_DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="context-stroke"/></marker></defs></svg>`;
 
 // Bridge to the host viewer: sendPrompt/openLink/copyToClipboard mirror
 // Claude's widget globals, and a ResizeObserver reports content height so the
@@ -461,10 +472,20 @@ function mermaidThemeVars(
       sequenceNumberColor: surface,
     },
     themeCSS: `
-      .node rect, .node polygon, rect.actor, .labelBox { rx: 8px; ry: 8px; }
+      .node rect, .node polygon, rect.actor, .labelBox { rx: 6px; ry: 6px; }
       .node rect, rect.actor { stroke-width: 1px; }
       .edgePath .path, .flowchart-link, .actor-line,
       .messageLine0, .messageLine1 { stroke-width: 1px; }
+      .cluster rect { fill: transparent; stroke: ${border}; stroke-dasharray: 4 3; rx: 8px; ry: 8px; }
+      .cluster-label text, .cluster-label span, .cluster-label p {
+        font-family: var(--font-grotesk); font-size: 11px; font-weight: 500;
+        letter-spacing: .1em; text-transform: uppercase; fill: ${muted}; color: ${muted};
+      }
+      .edgeLabel, .edgeLabel span, .edgeLabel p {
+        color: ${muted}; fill: ${muted};
+      }
+      .edgeLabel rect { fill: ${bg}; }
+      .actor-line { stroke: ${border}; stroke-dasharray: 3 3; }
       .node.accent > rect, .node.accent > polygon, .node.accent > circle,
       .node.accent > path { fill: ${accentBg}; stroke: ${accent}; }
       .node.accent .nodeLabel, .node.accent span, .node.accent text { fill: ${accent}; color: ${accent}; }

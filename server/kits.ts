@@ -57,6 +57,35 @@ const ISSUES_CSS = `
 .tree .tree{margin-top:7px;margin-left:9px;padding-left:14px;border-left:1px solid var(--color-border-secondary)}
 `;
 
+const CHARTS_CSS = `
+figure.chart{margin:0}
+.chart .eyebrow{font:500 11px/1.4 var(--font-grotesk);letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-tertiary)}
+.chart h3,.chart .headline{font:500 22px/1.2 var(--font-display);letter-spacing:-.01em;text-wrap:balance;margin:2px 0 4px}
+.chart .dek{font:400 14px/1.5 var(--font-sans);color:var(--color-text-secondary);text-wrap:pretty;max-width:60ch;margin:0}
+.chart .source{margin-top:8px;padding-top:8px;border-top:1px solid var(--color-border-tertiary);font:400 12px/1.4 var(--font-sans);font-variant-numeric:tabular-nums;color:var(--color-text-tertiary)}
+.chart .legend{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:12px 0}
+.chart .key{display:inline-flex;align-items:center;gap:6px;font:400 12px/1.4 var(--font-sans);color:var(--color-text-secondary)}
+.chart .key i{display:inline-block;width:16px;height:8px;flex:none;border-radius:2px;background:var(--series,var(--color-text-secondary))}
+.chart .key i.line{height:2px;border-radius:999px}
+.chart .s1{--series:color-mix(in oklab,var(--color-text-success) 35%,var(--color-text-secondary) 65%)}
+.chart .s2{--series:color-mix(in oklab,var(--color-text-info) 35%,var(--color-text-secondary) 65%)}
+.chart .s3{--series:color-mix(in oklab,var(--color-text-warning) 35%,var(--color-text-secondary) 65%)}
+.chart .s4{--series:color-mix(in oklab,var(--color-text-danger) 35%,var(--color-text-secondary) 65%)}
+.chart .focal{--series:var(--color-text-info)}
+.chart svg .gridline{stroke:var(--color-border-tertiary);stroke-width:1}
+.chart svg .axis{stroke:var(--color-border-primary);stroke-width:1}
+.chart svg .tick{font:400 11px var(--font-mono);font-variant-numeric:tabular-nums;fill:var(--color-text-tertiary)}
+.chart svg .cat{font:500 12px var(--font-sans);fill:var(--color-text-secondary)}
+.chart svg .value{font:400 11px var(--font-mono);font-variant-numeric:tabular-nums;fill:var(--color-text-secondary)}
+.chart svg .value.focal{fill:var(--color-text-info)}
+.chart svg .col{fill:color-mix(in oklab,var(--series,var(--color-text-secondary)) 18%,transparent);stroke:var(--series,var(--color-text-secondary));stroke-width:1}
+.chart svg .col.focal{fill:color-mix(in oklab,var(--series) 28%,transparent)}
+.chart svg .trend{fill:none;stroke:var(--series,var(--color-text-secondary));stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.chart svg .trend.focal{stroke-width:2.25}
+.chart svg .pt{fill:var(--series,var(--color-text-secondary));stroke:var(--color-background-primary);stroke-width:1.5}
+.chart svg .area{fill:color-mix(in oklab,var(--series,var(--color-text-secondary)) 10%,transparent);stroke:none}
+`;
+
 // slides: a stepped deck. Author `.deck` with `.slide` children; the JS shows
 // one at a time and injects prev/dots/counter/next controls. Arrow keys and
 // PageUp/Down navigate (plain keys only — the host owns the meta/alt combos).
@@ -118,6 +147,13 @@ export const KITS: Kit[] = [
     summary: "issue / PR / CI status — trees, badges, chips, rollup bars",
     classes: "card · tree · badge · chip · dot · bar",
     css: ISSUES_CSS,
+  },
+  {
+    id: "charts",
+    label: "Charts",
+    summary: "editorial charts — figure frame, gridlines, axes, focal + muted series",
+    classes: "chart · gridline · axis · col · trend · pt · area · legend",
+    css: CHARTS_CSS,
   },
   {
     id: "slides",

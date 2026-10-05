@@ -14,11 +14,47 @@ test("kitAssets injects a known kit's css and ignores unknown ids", () => {
 });
 
 test("kitAssets includes the shared core exactly once across multiple kits", () => {
-  const { css } = kitAssets(["issues", "slides"]);
+  const { css } = kitAssets(["issues", "slides", "charts"]);
   // .row is a CORE class — present once even with two kits requested
   assert.equal(css.match(/\.row\{/g)?.length, 1);
   assert.match(css, /\.tree/); // issues-specific
   assert.match(css, /\.deck>\.slide/); // slides-specific
+  assert.match(css, /\.chart svg \.gridline/); // charts-specific
+});
+
+test("charts kit is known and its svg styles avoid the issues bar selector", () => {
+  const { css } = kitAssets(["charts"]);
+  const summary = kitSummaries().find((kit) => kit.id === "charts");
+
+  assert.ok(isKnownKit("charts"));
+  assert.ok(summary);
+  assert.equal(summary?.label, "Charts");
+  assert.match(summary?.summary ?? "", /editorial charts/);
+  assert.match(css, /\.chart svg \.gridline/);
+  for (const [series, token] of [
+    ["s1", "success"],
+    ["s2", "info"],
+    ["s3", "warning"],
+    ["s4", "danger"],
+  ]) {
+    assert.ok(
+      css.includes(
+        `.chart .${series}{--series:color-mix(in oklab,var(--color-text-${token}) 35%,var(--color-text-secondary) 65%)}`,
+      ),
+    );
+  }
+  assert.match(
+    css,
+    /\.chart svg \.col\.focal\{fill:color-mix\(in oklab,var\(--series\) 28%,transparent\)\}/,
+  );
+  assert.doesNotMatch(css, /(?:^|})\s*\.bar\s*\{/);
+});
+
+test("issues and charts compose with both vocabularies intact", () => {
+  const { css } = kitAssets(["issues", "charts"]);
+  assert.match(css, /\.bar\{height:6px/);
+  assert.match(css, /\.chart svg \.gridline/);
+  assert.match(css, /\.chart svg \.col\{/);
 });
 
 test("kitAssets dedupes a repeated kit id", () => {
@@ -49,6 +85,7 @@ test("slides kit grid-stacks in normal flow (measurable height), never an absolu
 
 test("isKnownKit gates on the registry", () => {
   assert.ok(isKnownKit("issues"));
+  assert.ok(isKnownKit("charts"));
   assert.ok(!isKnownKit("issue"));
   assert.ok(!isKnownKit(42));
 });
@@ -88,11 +125,15 @@ test("kitSummaries advertises each kit without leaking the css/js payload", () =
 
 test("validateSurfaces accepts an html surface with known kits", async () => {
   const r = await validateSurfaces([
-    { kind: "html", html: "<p>x</p>", kits: ["issues", "slides"] },
+    { kind: "html", html: "<p>x</p>", kits: ["issues", "slides", "charts"] },
   ]);
   assert.equal(r.ok, true);
   if (r.ok)
-    assert.deepEqual(r.surfaces[0], { kind: "html", html: "<p>x</p>", kits: ["issues", "slides"] });
+    assert.deepEqual(r.surfaces[0], {
+      kind: "html",
+      html: "<p>x</p>",
+      kits: ["issues", "slides", "charts"],
+    });
 });
 
 test("validateSurfaces rejects an unknown kit id with the valid set", async () => {

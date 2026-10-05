@@ -1566,12 +1566,14 @@ const commands = {
         body: JSON.stringify({ agent: demo.agent, title: demo.title }),
       });
       for (const snip of demo.snippets) {
+        const htmlSurface = { kind: "html", html: snip.html };
+        if (snip.kits) htmlSurface.kits = snip.kits;
         const post = await api("/api/posts", {
           method: "POST",
           body: JSON.stringify({
             session: session.id,
             title: snip.title,
-            surfaces: [{ kind: "html", html: snip.html }],
+            surfaces: [htmlSurface],
           }),
         });
         for (const step of snip.followups ?? []) {

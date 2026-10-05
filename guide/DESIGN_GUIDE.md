@@ -279,23 +279,38 @@ SVG utility classes, available in every html surface:
 | class                                                            | effect                                                                                                               |
 | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `t` / `ts` / `th`                                                | text presets: 14px / 12px muted / 14px medium heading                                                                |
-| `box`                                                            | neutral rect — secondary fill, faint stroke, rx 8                                                                    |
-| `arr`                                                            | 1.2px connector line                                                                                                 |
-| `leader`                                                         | dashed guide line                                                                                                    |
+| `name` / `sub`                                                   | node name in sans / technical sublabel in mono                                                                       |
+| `eyebrow` / `lbl`                                                | uppercase grotesk zone/type tag / connector label                                                                    |
+| `box`                                                            | neutral rect — secondary fill, faint 1px stroke, rx 6                                                                |
+| `arr`                                                            | 1px connector with rounded caps and joins                                                                            |
+| `leader` / `dashed`                                              | dashed guide line / async or optional connector                                                                      |
+| `mask` / `zone`                                                  | opaque connector-label backdrop / dashed grouping boundary                                                           |
+| `focal`                                                          | info-token fill and stroke for a highlighted node; child text uses info ink                                          |
+| `callout`                                                        | italic serif aside; pair with the existing dashed `.leader`                                                          |
 | `node`                                                           | pointer cursor + hover dim, for clickable shapes                                                                     |
 | `c-blue` `c-teal` `c-amber` `c-coral` `c-green` `c-red` `c-gray` | color ramp: fill+stroke on shapes (or a whole `<g>`); child `<text>` auto-switches to readable ink in light and dark |
 
-A `<marker id="arrow">` is injected into every html surface — end any line with
-`marker-end="url(#arrow)"` and the arrowhead inherits the line's stroke color.
+An `<svg role="img">` should start with a `<title>` and `<desc>` and use
+prefixed ids. The injected `<marker id="arrow">` inherits the line's stroke
+color. Mask connector labels 6–8px above the line so the label clears it.
 
 ```html
-<svg width="100%" viewBox="0 0 680 70">
-  <g class="c-blue">
-    <rect class="box" x="10" y="10" width="130" height="40" />
-    <text class="th" x="75" y="35" text-anchor="middle">API</text>
+<svg role="img" aria-labelledby="gateway-title gateway-desc" width="100%" viewBox="0 0 440 112">
+  <title id="gateway-title">Request gateway</title>
+  <desc id="gateway-desc">A client sends a request to the auth API.</desc>
+  <rect class="zone" x="264" y="20" width="165" height="74" />
+  <text class="eyebrow" x="278" y="36">AUTH</text>
+  <line class="arr" x1="130" y1="58" x2="278" y2="58" marker-end="url(#arrow)" />
+  <rect class="mask" x="174" y="34" width="72" height="16" />
+  <text class="lbl" x="210" y="45" text-anchor="middle">HTTPS</text>
+  <rect class="box" x="10" y="36" width="120" height="44" />
+  <text class="name" x="70" y="56" text-anchor="middle">Client</text>
+  <text class="sub" x="70" y="72" text-anchor="middle">service caller</text>
+  <g class="focal">
+    <rect class="box" x="278" y="42" width="136" height="42" />
+    <text class="name" x="346" y="60" text-anchor="middle">Auth API</text>
+    <text class="sub" x="346" y="76" text-anchor="middle">POST /jobs</text>
   </g>
-  <text class="ts" x="250" y="24" text-anchor="middle">202 + job id</text>
-  <line class="arr" x1="140" y1="30" x2="360" y2="30" marker-end="url(#arrow)" />
 </svg>
 ```
 
@@ -322,6 +337,53 @@ theme tokens, so kit output re-themes with the workspace.
   at a time (grid-stacked in normal flow, so the frame always sizes to the tallest
   slide) and injects prev/dots/counter/next controls. Arrow keys and PageUp/Down
   navigate.
+- **`charts`** — editorial `<figure class="chart">` frame with eyebrow, headline,
+  dek, source caption and a wrapping `.legend`; SVG `.gridline`, `.axis`, `.tick`,
+  `.cat`, `.value`, `.col`, `.trend`, `.pt` and `.area` styles use theme-derived
+  muted series (`.s1`–`.s4`) and one info-token `.focal` accent. No `.bar` selector,
+  so it composes safely with `issues`.
+
+```html
+<figure class="chart">
+  <span class="eyebrow">Build pipeline</span>
+  <h3>Compile time by release</h3>
+  <svg width="100%" viewBox="0 0 480 160" role="img" aria-labelledby="build-title build-desc">
+    <title id="build-title">Compile minutes by release</title>
+    <desc id="build-desc">Five releases, with cache v2 highlighted.</desc>
+    <g class="gridline">
+      <line x1="48" y1="126" x2="460" y2="126" />
+      <line x1="48" y1="88" x2="460" y2="88" />
+      <line x1="48" y1="50" x2="460" y2="50" />
+    </g>
+    <g class="axis">
+      <line x1="48" y1="42" x2="48" y2="126" />
+      <line x1="48" y1="126" x2="460" y2="126" />
+    </g>
+    <g class="tick" text-anchor="end">
+      <text x="40" y="130">0</text>
+      <text x="40" y="92">10</text>
+      <text x="40" y="54">20</text>
+    </g>
+    <rect class="col" x="78" y="64" width="42" height="62" />
+    <rect class="col" x="154" y="70" width="42" height="56" />
+    <rect class="col focal" x="230" y="82" width="42" height="44" />
+    <rect class="col" x="306" y="94" width="42" height="32" />
+    <rect class="col" x="382" y="104" width="42" height="22" />
+    <g class="cat" text-anchor="middle">
+      <text x="99" y="146">Base</text>
+      <text x="175" y="146">Cache</text>
+      <text x="251" y="146">v2</text>
+      <text x="327" y="146">v3</text>
+      <text x="403" y="146">Now</text>
+    </g>
+  </svg>
+  <div class="legend">
+    <span class="key"><i></i>Other releases</span>
+    <span class="key"><i class="focal"></i>Cache v2</span>
+  </div>
+  <figcaption class="source">Source: CI jobs, median wall-clock minutes.</figcaption>
+</figure>
+```
 
 ```sh
 sideshow publish board.html --kit issues       # CLI (repeatable: --kit a --kit b)
@@ -337,6 +399,32 @@ publish_post({ surfaces: [{ kind: "html", html, kits: ["issues"] }] }); // MCP
 
 A kit only adds vocabulary — you can hand-roll custom markup right beside the
 kit classes in the same surface.
+
+## Diagrams & charts
+
+Adapted from cathrynlavery/diagram-design (MIT).
+
+- First ask whether a table or paragraph would answer the question more clearly.
+- Delete before adding. Aim for visual density around 4/10, not a map of everything.
+- Keep diagrams to ≤9 nodes and ≤12 connectors; beyond that, split overview and detail.
+- Use one or two focal elements at most; keep every other shape quiet.
+- Use series colours only when lines or areas overlap and need telling apart; for single-series bars keep non-focal marks muted.
+- Prefer orthogonal connectors: straight when aligned, right-angle elbows otherwise.
+- Draw connectors before boxes. Avoid diagonals, stacked lines and overlapping routes.
+- Give parallel connectors ≥12px separation and distinct, intentional attach points.
+- Keep labels to about three words; place them on `.mask` with a 6–8px line gap.
+- Use a bottom-strip legend only for types that actually appear in the diagram.
+- Align geometry to a 4px grid; use names in sans 500 and technical text in mono.
+- Use grotesk eyebrows for tags/axes, display serif for titles, and italic serif for asides.
+- Limit editorial callouts to two; keep them brief and connect each with a `.leader`.
+- Make SVG accessible: `role="img"`, `<title>` first, a useful `<desc>`, and prefixed ids.
+- For charts, start bars at zero; use 4–8 bars and no more than five series.
+- Highlight one focal series; label values directly where that stays legible.
+- Keep category labels horizontal or within 45°; never use 3D, gradients or smoothing
+  that implies precision absent from sampled data.
+- State the source and unit. Prefer hand-written SVG with the `charts` kit.
+- If a CDN chart library is necessary, read palette values from computed CSS
+  variables and use the Timeless font tokens; do not introduce a second theme.
 
 ## Theming — dark mode is mandatory
 

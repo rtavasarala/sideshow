@@ -260,12 +260,12 @@ test("publish --kit puts the (deduped) kit ids on the html surface", async () =>
       "--kit",
       "issues",
       "--kit",
-      "slides,issues",
+      "slides,charts,issues",
     );
     assert.equal(code, 0);
     const out = JSON.parse(stdout);
     const full = await fetch(`${server.url}/api/surfaces/${out.id}`).then((r) => r.json() as any);
-    assert.deepEqual(full.surfaces[0].kits, ["issues", "slides"]);
+    assert.deepEqual(full.surfaces[0].kits, ["issues", "slides", "charts"]);
   } finally {
     await server.close();
   }
@@ -298,7 +298,58 @@ test("kits lists the workspace's available kits", async () => {
     assert.equal(code, 0);
     const kits = JSON.parse(stdout);
     assert.ok(kits.some((k: any) => k.id === "issues"));
+    assert.ok(kits.some((k: any) => k.id === "charts"));
     assert.ok(kits.some((k: any) => k.id === "slides"));
+  } finally {
+    await server.close();
+  }
+});
+
+test("demo preserves opted-in kits on seeded html posts", async () => {
+  const server = await serveApp();
+  try {
+    const { code, stderr } = await runWith({ env: { SIDESHOW_URL: server.url } }, "demo");
+    assert.equal(code, 0, stderr);
+
+    const sessions = (await fetch(`${server.url}/api/sessions`).then((r) => r.json())) as any[];
+    const queue = sessions.find((session) => session.title === "Queue profiling");
+    assert.ok(queue, "demo queue session was created");
+    const posts = (await fetch(`${server.url}/api/sessions/${queue.id}/posts`).then((r) =>
+      r.json(),
+    )) as any[];
+    const chartRow = posts.find((post) => post.title === "Build time by pipeline stage");
+    assert.ok(chartRow, "chart demo post was created");
+
+    const chart = (await fetch(`${server.url}/api/posts/${chartRow.id}`).then((r) =>
+      r.json(),
+    )) as any;
+    assert.deepEqual(chart.surfaces[0].kits, ["charts"]);
+
+    const chartHtml = chart.surfaces[0].html as string;
+    assert.doesNotMatch(chartHtml, /class="col s[1-4]"/);
+    assert.match(chartHtml, /class="value focal"/);
+    assert.doesNotMatch(chartHtml, /class="area/);
+    assert.match(chartHtml, /Worker p95 latency fell 28%/);
+
+    const auth = sessions.find((session) => session.title === "Auth refactor");
+    assert.ok(auth, "demo auth session was created");
+    const authPosts = (await fetch(`${server.url}/api/sessions/${auth.id}/posts`).then((r) =>
+      r.json(),
+    )) as any[];
+    const jwtRow = authPosts.find((post) => post.title === "JWT refresh flow");
+    assert.ok(jwtRow, "JWT demo post was created");
+    const jwt = (await fetch(`${server.url}/api/posts/${jwtRow.id}`).then((r) => r.json())) as any;
+    const svgHtml = jwt.surfaces[0].html as string;
+    assert.doesNotMatch(svgHtml, /class="zone"/);
+    assert.match(svgHtml, /class="focal"/);
+    assert.match(svgHtml, /class="sub"/);
+    assert.match(svgHtml, /class="mask"/);
+    assert.match(svgHtml, /class="arr c-red"/);
+    assert.match(svgHtml, /class="arr c-green"/);
+    assert.deepEqual(
+      [...svgHtml.matchAll(/class="lbl"[^>]*>([^<]+)<\/text>/g)].map((match) => match[1]),
+      ["EXPIRED JWT", "401 EXPIRED", "REFRESH COOKIE", "NEW TOKEN PAIR", "RETRY"],
+    );
   } finally {
     await server.close();
   }
