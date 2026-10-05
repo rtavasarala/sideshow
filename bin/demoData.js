@@ -204,7 +204,7 @@ const CHARTS_DEMO = `
 <figure class="chart" style="margin-top: 24px;">
   <span class="eyebrow">Post-deploy p95 latency · ms</span>
   <h3 class="headline">Worker p95 latency fell 28%</h3>
-  <p class="dek">Five days after batched dequeue shipped, the focal series fell from 92 to 66 ms.</p>
+  <p class="dek">Five days after batched dequeue shipped, worker waits fell from 92 to 66 ms.</p>
   <svg width="100%" viewBox="0 0 680 176" role="img" aria-labelledby="latency-title latency-desc">
     <title id="latency-title">Post-deploy p95 latency by service</title>
     <desc id="latency-desc">Worker p95 latency falls from 92 to 66 milliseconds while API and queue latency also trend down.</desc>
@@ -288,7 +288,12 @@ export const DEMO_SESSIONS = [
         title: "JWT refresh flow",
         html: JWT_DIAGRAM,
         followups: [
-          { comment: { author: "user", text: "Where does the access token live client-side?" } },
+          {
+            comment: {
+              author: "user",
+              text: "Where does the access token live client-side?",
+            },
+          },
           { update: { html: JWT_DIAGRAM + JWT_EXPLAINER } },
           {
             comment: {
