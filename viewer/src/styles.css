@@ -69,6 +69,12 @@ body {
   text-rendering: optimizeLegibility;
   font: 14px/1.5 var(--font-sans);
 }
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
 #app {
   display: flex;
   height: 100%;
@@ -1039,7 +1045,7 @@ select.vbadge {
   border-radius: 999px;
   color: white;
   background: linear-gradient(135deg, var(--accent), var(--border-2));
-  font: 700 8px/1 var(--font-sans, system-ui, sans-serif);
+  font: 700 8px/1 var(--font-sans);
 }
 .anchor-card {
   position: absolute;
@@ -1088,7 +1094,7 @@ select.vbadge {
   border-radius: 999px;
   color: white;
   background: linear-gradient(135deg, var(--accent), var(--border-2));
-  font: 700 10px/1 var(--font-sans, system-ui, sans-serif);
+  font: 700 10px/1 var(--font-sans);
 }
 .anchor-head .who {
   min-width: 0;
@@ -1796,9 +1802,7 @@ iframe {
   position: absolute;
   top: 8px;
   right: 8px;
-  font:
-    11.5px -apple-system,
-    sans-serif;
+  font: 11.5px var(--font-sans);
   color: var(--faint);
   background: var(--bg);
   border: 0.5px solid var(--border);
@@ -1938,9 +1942,7 @@ iframe {
   align-items: center;
   justify-content: center;
   text-wrap: pretty;
-  font:
-    12px -apple-system,
-    sans-serif;
+  font: 12px var(--font-sans);
   color: var(--text);
   background: var(--bg);
   border: 0.5px solid var(--border);
