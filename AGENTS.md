@@ -54,7 +54,7 @@ consciously, not as a side effect):
   and comment `seq` preserved via `JsonFileStore.exportBoard` →
   `SqlStore.importBoard`); it's idempotent and never imports into a non-empty db.
 - `server/kits.ts` — opt-in style/behavior bundles for html surfaces (`issues`,
-  `slides`). An html surface lists kit ids in `kits`; `renderHtmlPage` injects each
+  `charts`, `slides`). An html surface lists kit ids in `kits`; `renderHtmlPage` injects each
   kit's CSS/JS into the sandbox after the base. Runtime-agnostic; allowlisted in
   `server/postSurfaces.ts` and listed at `/api/kits`. Adding a kit is a registry entry +
   a guide bullet — no new surface kind, no native renderer.

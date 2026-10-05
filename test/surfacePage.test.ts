@@ -247,6 +247,70 @@ test("a mermaid page pins mermaid's derived colors to the scheme so the whole di
   }
 });
 
+test("html surfaces include the editorial svg vocabulary and slimmer arrow marker", () => {
+  const html = renderHtmlPage({ title: "t", html: "<svg></svg>", origin: ORIGIN });
+
+  for (const selector of [
+    "svg .name",
+    "svg .sub",
+    "svg .eyebrow",
+    "svg .lbl",
+    "svg .mask",
+    "svg .zone",
+    "svg .focal",
+    "svg .dashed",
+    "svg .callout",
+  ]) {
+    assert.ok(html.includes(selector), `${selector} is available in the SVG kit`);
+  }
+  assert.match(html, /svg text \{ font-variant-numeric: tabular-nums; \}/);
+  assert.match(
+    html,
+    /\.box \{[^}]*stroke-width: 1;[^}]*rx: 6px;/,
+    "boxes use the editorial radius and stroke",
+  );
+  assert.match(
+    html,
+    /\.arr \{[^}]*stroke-width: 1;[^}]*stroke-linecap: round;[^}]*stroke-linejoin: round;/,
+    "connectors use a fine stroke with rounded ends",
+  );
+  assert.match(
+    html,
+    /marker id="arrow"[^>]*markerWidth="7\.5" markerHeight="7\.5"[^>]*orient="auto-start-reverse"><path d="M0 1L10 5L0 9z" fill="context-stroke"/,
+    "the arrow keeps its id, orientation, and contextual stroke",
+  );
+  assert.match(
+    html,
+    /svg \.mask \{ fill: var\(--color-background-primary\); stroke: none; rx: 2px; \}/,
+    "connector masks match the html surface backdrop",
+  );
+});
+
+test("Mermaid preserves measured label fonts while styling clusters and edges", () => {
+  const page = renderMermaidPage({
+    mermaid: "flowchart TD; A-->B",
+    origin: ORIGIN,
+    theme: "github",
+    mode: "light",
+  });
+
+  assert.doesNotMatch(page, /\.nodeLabel\s*\{[^}]*font-(?:family|size|weight)/);
+  assert.match(
+    page,
+    /\.cluster rect \{ fill: transparent; stroke: [^;]+; stroke-dasharray: 4 3; rx: 8px; ry: 8px; \}/,
+  );
+  assert.match(page, /\.cluster-label text, \.cluster-label span, \.cluster-label p/);
+  assert.match(
+    page,
+    /\.edgeLabel, \.edgeLabel span, \.edgeLabel p \{(?:\\n|\s)*color: [^;]+; fill: [^;]+;/,
+  );
+  assert.doesNotMatch(page, /\.edgeLabel[^{}]*\{[^}]*font-(?:family|size|weight)/);
+  assert.match(page, /\.edgeLabel rect \{ fill: [^;]+; \}/);
+  assert.doesNotMatch(page, /\.noteText[^{]*\{/);
+  assert.match(page, /\.actor-line \{ stroke: [^;]+; stroke-dasharray: 3 3; \}/);
+  assert.doesNotMatch(page, /flowchart:\s*\{\s*curve:/);
+});
+
 test("html and rich surfaces inject the Timeless faces and tokens at the base URL", () => {
   const baseUrl = `${ORIGIN}/u/alice`;
   const html = renderHtmlPage({

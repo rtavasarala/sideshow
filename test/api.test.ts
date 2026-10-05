@@ -558,7 +558,7 @@ test("GET /api/kits advertises the available kits without the css payload", asyn
   const app = makeApp();
   const kits = (await (await app.request("/api/kits")).json()) as any[];
   const ids = kits.map((k) => k.id);
-  assert.ok(ids.includes("issues") && ids.includes("slides"));
+  assert.ok(ids.includes("issues") && ids.includes("charts") && ids.includes("slides"));
   for (const k of kits) {
     assert.ok(typeof k.summary === "string" && k.summary.length > 0);
     assert.equal("css" in k, false);

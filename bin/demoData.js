@@ -2,30 +2,47 @@
 // agents draw on the surface. Keep this file dependency-free like the CLI.
 
 const JWT_DIAGRAM = `
-<svg width="100%" viewBox="0 0 680 320">
-  <line class="leader" x1="110" y1="52" x2="110" y2="300"/>
-  <line class="leader" x1="340" y1="52" x2="340" y2="300"/>
-  <line class="leader" x1="570" y1="52" x2="570" y2="300"/>
+<svg role="img" aria-labelledby="jwt-flow-title jwt-flow-desc" width="100%" viewBox="0 0 680 330">
+  <title id="jwt-flow-title">JWT refresh lifecycle</title>
+  <desc id="jwt-flow-desc">The client retries an expired access token after the refresh endpoint rotates its cookie.</desc>
 
-  <rect class="box" x="35" y="10" width="150" height="40"/>
-  <text class="th" x="110" y="35" text-anchor="middle">Client</text>
-  <g class="c-blue"><rect class="box" x="265" y="10" width="150" height="40"/><text class="th" x="340" y="35" text-anchor="middle">/api (guarded)</text></g>
-  <g class="c-amber"><rect class="box" x="495" y="10" width="150" height="40"/><text class="th" x="570" y="35" text-anchor="middle">/auth/refresh</text></g>
+  <line class="leader" x1="110" y1="104" x2="110" y2="294"/>
+  <line class="leader" x1="340" y1="104" x2="340" y2="294"/>
+  <line class="leader" x1="570" y1="104" x2="570" y2="294"/>
 
-  <text class="ts" x="225" y="84" text-anchor="middle">request + expired JWT</text>
-  <line class="arr" x1="110" y1="92" x2="334" y2="92" marker-end="url(#arrow)"/>
+  <line class="arr" x1="110" y1="126" x2="334" y2="126" marker-end="url(#arrow)"/>
+  <rect class="mask" x="178" y="103" width="94" height="16"/>
+  <text class="lbl" x="225" y="114" text-anchor="middle">EXPIRED JWT</text>
 
-  <text class="ts c-red" x="225" y="120" text-anchor="middle">401 token_expired</text>
-  <line class="arr c-red" x1="340" y1="128" x2="116" y2="128" marker-end="url(#arrow)"/>
+  <line class="arr c-red" x1="340" y1="164" x2="116" y2="164" marker-end="url(#arrow)"/>
+  <rect class="mask" x="179" y="141" width="92" height="16"/>
+  <text class="lbl" x="225" y="152" text-anchor="middle">401 EXPIRED</text>
 
-  <text class="ts" x="340" y="172" text-anchor="middle">refresh token (httpOnly cookie)</text>
-  <line class="arr" x1="110" y1="180" x2="564" y2="180" marker-end="url(#arrow)"/>
+  <line class="arr" x1="110" y1="204" x2="564" y2="204" marker-end="url(#arrow)"/>
+  <rect class="mask" x="282" y="181" width="116" height="16"/>
+  <text class="lbl" x="340" y="192" text-anchor="middle">REFRESH COOKIE</text>
 
-  <text class="ts c-green" x="340" y="208" text-anchor="middle">new JWT + rotated refresh token</text>
-  <line class="arr c-green" x1="570" y1="216" x2="116" y2="216" marker-end="url(#arrow)"/>
+  <line class="arr c-green" x1="570" y1="242" x2="116" y2="242" marker-end="url(#arrow)"/>
+  <rect class="mask" x="281" y="219" width="118" height="16"/>
+  <text class="lbl" x="340" y="230" text-anchor="middle">NEW TOKEN PAIR</text>
 
-  <text class="ts" x="225" y="260" text-anchor="middle">retry with new JWT</text>
-  <line class="arr" x1="110" y1="268" x2="334" y2="268" marker-end="url(#arrow)"/>
+  <line class="arr" x1="110" y1="280" x2="334" y2="280" marker-end="url(#arrow)"/>
+  <rect class="mask" x="194" y="257" width="62" height="16"/>
+  <text class="lbl" x="225" y="268" text-anchor="middle">RETRY</text>
+
+  <rect class="box" x="35" y="58" width="150" height="46"/>
+  <text class="name" x="110" y="78" text-anchor="middle">Client</text>
+  <text class="sub" x="110" y="94" text-anchor="middle">memory-only token</text>
+  <g class="focal">
+    <rect class="box" x="265" y="58" width="150" height="46"/>
+    <text class="name" x="340" y="78" text-anchor="middle">Auth API</text>
+    <text class="sub" x="340" y="94" text-anchor="middle">/api (guarded)</text>
+  </g>
+  <g class="c-amber">
+    <rect class="box" x="495" y="58" width="150" height="46"/>
+    <text class="name" x="570" y="78" text-anchor="middle">Refresh</text>
+    <text class="sub" x="570" y="94" text-anchor="middle">httpOnly cookie</text>
+  </g>
 </svg>`;
 
 const JWT_EXPLAINER = `
@@ -133,6 +150,118 @@ const QUEUE_METRICS = `
   }
 </script>`;
 
+const CHARTS_DEMO = `
+<figure class="chart">
+  <span class="eyebrow">CI pipeline · main branch</span>
+  <h3>Tests make up 41% of pipeline time</h3>
+  <p class="dek">Median duration by stage across the last 20 green builds; each column starts at zero.</p>
+  <svg width="100%" viewBox="0 0 680 230" role="img" aria-labelledby="pipeline-title pipeline-desc">
+    <title id="pipeline-title">Median CI duration by stage</title>
+    <desc id="pipeline-desc">Plan takes 3 minutes, build 15, tests 24, package 7, and release 9. Tests are the focal stage.</desc>
+    <g class="gridline">
+      <line x1="72" y1="180" x2="646" y2="180"/>
+      <line x1="72" y1="152" x2="646" y2="152"/>
+      <line x1="72" y1="124" x2="646" y2="124"/>
+      <line x1="72" y1="96" x2="646" y2="96"/>
+      <line x1="72" y1="68" x2="646" y2="68"/>
+      <line x1="72" y1="40" x2="646" y2="40"/>
+    </g>
+    <g class="axis">
+      <line x1="72" y1="32" x2="72" y2="180"/>
+      <line x1="72" y1="180" x2="646" y2="180"/>
+    </g>
+    <g class="tick" text-anchor="end">
+      <text x="62" y="184">0</text>
+      <text x="62" y="156">5</text>
+      <text x="62" y="128">10</text>
+      <text x="62" y="100">15</text>
+      <text x="62" y="72">20</text>
+      <text x="62" y="44">25</text>
+    </g>
+    <rect class="col" x="97" y="163.2" width="52" height="16.8" rx="2"/>
+    <rect class="col" x="207" y="96" width="52" height="84" rx="2"/>
+    <rect class="col focal" x="317" y="45.6" width="52" height="134.4" rx="2"/>
+    <rect class="col" x="427" y="140.8" width="52" height="39.2" rx="2"/>
+    <rect class="col" x="537" y="129.6" width="52" height="50.4" rx="2"/>
+    <g text-anchor="middle">
+      <text class="value" x="123" y="157">3</text>
+      <text class="value" x="233" y="89">15</text>
+      <text class="value focal" x="343" y="39">24</text>
+      <text class="value" x="453" y="134">7</text>
+      <text class="value" x="563" y="123">9</text>
+    </g>
+    <g class="cat" text-anchor="middle">
+      <text x="123" y="202">Plan</text>
+      <text x="233" y="202">Build</text>
+      <text x="343" y="202">Test</text>
+      <text x="453" y="202">Package</text>
+      <text x="563" y="202">Release</text>
+    </g>
+  </svg>
+  <figcaption class="source">Source: main-branch CI jobs, last 20 green builds; median minutes per stage.</figcaption>
+</figure>
+
+<figure class="chart" style="margin-top: 24px;">
+  <span class="eyebrow">Post-deploy p95 latency · ms</span>
+  <h3 class="headline">Worker p95 latency fell 28%</h3>
+  <p class="dek">Five days after batched dequeue shipped, worker waits fell from 92 to 66 ms.</p>
+  <svg width="100%" viewBox="0 0 680 176" role="img" aria-labelledby="latency-title latency-desc">
+    <title id="latency-title">Post-deploy p95 latency by service</title>
+    <desc id="latency-desc">Worker p95 latency falls from 92 to 66 milliseconds while API and queue latency also trend down.</desc>
+    <g class="gridline">
+      <line x1="62" y1="135" x2="626" y2="135"/>
+      <line x1="62" y1="110" x2="626" y2="110"/>
+      <line x1="62" y1="85" x2="626" y2="85"/>
+      <line x1="62" y1="60" x2="626" y2="60"/>
+      <line x1="62" y1="35" x2="626" y2="35"/>
+    </g>
+    <g class="axis">
+      <line x1="62" y1="30" x2="62" y2="135"/>
+      <line x1="62" y1="135" x2="626" y2="135"/>
+    </g>
+    <g class="tick" text-anchor="end">
+      <text x="52" y="139">0</text>
+      <text x="52" y="114">25</text>
+      <text x="52" y="89">50</text>
+      <text x="52" y="64">75</text>
+      <text x="52" y="39">100</text>
+    </g>
+    <polyline class="trend s1" points="80,107 200,109 320,110 440,112 560,114"/>
+    <polyline class="trend s2" points="80,67 200,75 320,79 440,83 560,87"/>
+    <polyline class="trend focal" points="80,43 200,49 320,57 440,63 560,69"/>
+    <g>
+      <circle class="pt s1" cx="80" cy="107" r="3"/>
+      <circle class="pt s1" cx="200" cy="109" r="3"/>
+      <circle class="pt s1" cx="320" cy="110" r="3"/>
+      <circle class="pt s1" cx="440" cy="112" r="3"/>
+      <circle class="pt s1" cx="560" cy="114" r="3"/>
+      <circle class="pt s2" cx="80" cy="67" r="3"/>
+      <circle class="pt s2" cx="200" cy="75" r="3"/>
+      <circle class="pt s2" cx="320" cy="79" r="3"/>
+      <circle class="pt s2" cx="440" cy="83" r="3"/>
+      <circle class="pt s2" cx="560" cy="87" r="3"/>
+      <circle class="pt focal" cx="80" cy="43" r="3"/>
+      <circle class="pt focal" cx="200" cy="49" r="3"/>
+      <circle class="pt focal" cx="320" cy="57" r="3"/>
+      <circle class="pt focal" cx="440" cy="63" r="3"/>
+      <circle class="pt focal" cx="560" cy="69" r="3"/>
+    </g>
+    <g class="cat" text-anchor="middle">
+      <text x="80" y="156">Mon</text>
+      <text x="200" y="156">Tue</text>
+      <text x="320" y="156">Wed</text>
+      <text x="440" y="156">Thu</text>
+      <text x="560" y="156">Fri</text>
+    </g>
+  </svg>
+  <div class="legend">
+    <span class="key"><i class="s1 line"></i>API</span>
+    <span class="key"><i class="s2 line"></i>Queue</span>
+    <span class="key"><i class="focal line"></i>Worker</span>
+  </div>
+  <figcaption class="source">Source: service telemetry, Monday–Friday; p95 milliseconds.</figcaption>
+</figure>`;
+
 // Seeded in order; the viewer sorts sessions by last activity, so the last
 // session here ends up on top.
 export const DEMO_SESSIONS = [
@@ -144,6 +273,11 @@ export const DEMO_SESSIONS = [
         title: "Queue latency after batched dequeue",
         html: QUEUE_METRICS,
       },
+      {
+        title: "Build time by pipeline stage",
+        html: CHARTS_DEMO,
+        kits: ["charts"],
+      },
     ],
   },
   {
@@ -154,7 +288,12 @@ export const DEMO_SESSIONS = [
         title: "JWT refresh flow",
         html: JWT_DIAGRAM,
         followups: [
-          { comment: { author: "user", text: "Where does the access token live client-side?" } },
+          {
+            comment: {
+              author: "user",
+              text: "Where does the access token live client-side?",
+            },
+          },
           { update: { html: JWT_DIAGRAM + JWT_EXPLAINER } },
           {
             comment: {
