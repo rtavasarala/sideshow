@@ -5,6 +5,7 @@ import guideMarkdown from "../guide/DESIGN_GUIDE.md";
 import pkg from "../package.json" with { type: "json" };
 import { createApp } from "../server/app.ts";
 import { SqlStore } from "../server/sqlStore.ts";
+import { FONT_FILES } from "../server/typography.ts";
 import viewerHtml from "../viewer/dist/index.html";
 import { matchPostScreenshot, planPostScreenshot } from "./screenshot.ts";
 import { postScreenshotClientCacheControl, servePostScreenshot } from "./screenshotCache.ts";
@@ -12,6 +13,7 @@ import { postScreenshotClientCacheControl, servePostScreenshot } from "./screens
 interface Env {
   BOARD: DurableObjectNamespace<SideshowBoard>;
   BROWSER: BrowserRun;
+  ASSETS: Fetcher;
   SIDESHOW_TOKEN?: string;
   SIDESHOW_PUBLIC_READ?: string;
 }
@@ -55,12 +57,27 @@ export default {
         { status: 503 },
       );
     }
+    const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname.startsWith("/fonts/")) {
+      const file = url.pathname.slice("/fonts/".length);
+      if (!FONT_FILES.has(file)) return new Response(null, { status: 404 });
+      const asset = await env.ASSETS.fetch(request);
+      if (!asset.ok) return new Response(null, { status: 404 });
+      const headers = new Headers(asset.headers);
+      headers.set("Content-Type", "font/woff2");
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("Access-Control-Allow-Origin", "*");
+      return new Response(asset.body, {
+        status: asset.status,
+        statusText: asset.statusText,
+        headers,
+      });
+    }
     const workspace = env.BOARD.get(env.BOARD.idFromName("default"));
 
     // Screenshot: GET /p/:id.png (or legacy /s/:id.png) → PNG of the rendered post page.
     // Auth is decided by the app — we forward the user's credentials to the DO
     // and only proceed if it returns 200.
-    const url = new URL(request.url);
     const postId = matchPostScreenshot(request.method, url.pathname);
     if (!postId) return workspace.fetch(request);
 

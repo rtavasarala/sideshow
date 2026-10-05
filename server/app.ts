@@ -3,6 +3,7 @@ import { bodyLimit } from "hono/body-limit";
 import { getCookie, setCookie } from "hono/cookie";
 import { streamSSE } from "hono/streaming";
 import { decodeBase64 } from "./base64.ts";
+import { FONT_FILES, fontFaceCss } from "./typography.ts";
 import {
   feedbackView,
   postDetailView,
@@ -154,15 +155,16 @@ export interface AppOptions {
   guideMarkdown: string;
   setupText: string;
   agentHowtoText?: string;
+  fontFile?: (file: string) => Promise<Uint8Array | ArrayBuffer | null>;
   // When set (cloud deployments), this hook authorizes requests before any
   // app route runs. Return true to allow, false to use the default 401, or a
   // Response for custom denials. This is intentionally lower-level than
   // authToken so hosts can validate edge-signed assertions without teaching
   // sideshow about their session/token systems.
   authenticate?: AuthenticateHook;
-  // When set (self-hosted Worker deployments), every route except /guide,
-  // /setup, and /agent-howto requires it: Authorization bearer, ?key= query,
-  // or the cookie it sets. Preserved for backwards compatibility.
+  // When set (self-hosted Worker deployments), every route except the public
+  // docs and allowlisted /fonts/:file assets requires it: Authorization bearer,
+  // ?key= query, or the cookie it sets. Preserved for backwards compatibility.
   authToken?: string;
   // Public path prefix for deployments mounted below an origin root, e.g.
   // /u/:account in a hosted multi-tenant wrapper. The core still receives
@@ -283,6 +285,7 @@ export function createApp({
   guideMarkdown,
   setupText,
   agentHowtoText = setupText,
+  fontFile,
   authenticate,
   authToken,
   basePath,
@@ -835,7 +838,13 @@ export function createApp({
     }
 
     if (!authToken) return next();
-    if (path === "/guide" || path === "/setup" || path === "/agent-howto") return next();
+    if (
+      path === "/guide" ||
+      path === "/setup" ||
+      path === "/agent-howto" ||
+      path.startsWith("/fonts/")
+    )
+      return next();
 
     const key = c.req.query("key");
     if (key === authToken) {
@@ -984,9 +993,14 @@ export function createApp({
       ),
       pageTitle,
     );
-    if (!opts.post) return html;
+    const origin = new URL(c.req.url).origin;
+    const fontStyles = `<style>${fontFaceCss(`${origin}${requestBasePath(c.req.raw)}`)}</style>`;
+    if (!opts.post) return injectHead(html, fontStyles);
     const themeId = (await store.getSetting("theme")) ?? DEFAULT_THEME_ID;
-    return injectHead(html, postPreviewHead(opts.post, c.req.raw, themeId, version ?? "dev"));
+    return injectHead(
+      injectHead(html, fontStyles),
+      postPreviewHead(opts.post, c.req.raw, themeId, version ?? "dev"),
+    );
   };
   app.get("/", async (c) => c.html(await configuredViewerHtml(c)));
   app.get("/connect", async (c) =>
@@ -1015,6 +1029,20 @@ export function createApp({
   app.get("/guide", (c) => c.text(withOrigin(guideMarkdown, c)));
   app.get("/setup", (c) => c.text(withOrigin(setupText, c)));
   app.get("/agent-howto", (c) => c.text(withOrigin(agentHowtoText, c)));
+  app.get("/fonts/:file", async (c) => {
+    const file = c.req.param("file");
+    if (!FONT_FILES.has(file) || !fontFile) return c.notFound();
+    const bytes = await fontFile(file);
+    if (bytes == null || bytes.byteLength === 0) return c.notFound();
+    const body = bytes instanceof ArrayBuffer ? bytes : Uint8Array.from(bytes);
+    return new Response(body, {
+      headers: {
+        "Content-Type": "font/woff2",
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  });
 
   // Opt-in html kits available on this workspace (id, label, summary, classes) —
   // for discovery (`sideshow kits`); the CSS/JS payloads are server-only.
@@ -1612,6 +1640,7 @@ export function createApp({
     const modeParam = c.req.query("mode");
     const mode = modeParam === "light" || modeParam === "dark" ? modeParam : undefined;
     const origin = new URL(c.req.url).origin;
+    const baseUrl = `${origin}${requestBasePath(c.req.raw)}`;
 
     // Cache the finished document. The key pins everything the output depends
     // on; the resolved `version` makes it immutable, so a hit is always correct.
@@ -1628,13 +1657,14 @@ export function createApp({
           title,
           html: surface.html,
           origin,
+          baseUrl,
           theme,
           mode,
           kits: surface.kits,
         });
       }
       if (surface.kind === "mermaid") {
-        return renderMermaidPage({ mermaid: surface.mermaid, origin, theme, mode });
+        return renderMermaidPage({ mermaid: surface.mermaid, origin, baseUrl, theme, mode });
       }
       // Load the rich renderers on first use, not at module load. richRender.ts
       // pulls in shiki, @pierre/diffs, markdown-it and ansi_up — measured at ~48 MB
@@ -1662,9 +1692,16 @@ export function createApp({
                   body: `<div class="rich-error">Couldn’t render diff — ${escapeHtml(
                     e instanceof Error ? e.message : "render error",
                   )}</div>`,
-                  css: `.rich-error{color:var(--danger);font:13px/1.5 ui-monospace,monospace;padding:8px 12px;}`,
+                  css: `.rich-error{color:var(--danger);font:13px/1.5 var(--font-mono);padding:8px 12px;}`,
                 }));
-      return renderSandboxedPart({ body: rendered.body, css: rendered.css, origin, theme, mode });
+      return renderSandboxedPart({
+        body: rendered.body,
+        css: rendered.css,
+        origin,
+        baseUrl,
+        theme,
+        mode,
+      });
     });
     return c.html(doc);
   };

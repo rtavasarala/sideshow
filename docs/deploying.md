@@ -64,6 +64,9 @@ disabled with a tooltip — there is nothing to render the image. Auth is unchan
 the Worker first forwards the request to the post's read route, so a private
 workspace's screenshots stay as protected as the workspace itself.
 
+For optional Timeless typography, run `npm run fonts:install` before
+`npm run deploy`; see [docs/fonts.md](fonts.md).
+
 The whole app runs inside a single Durable Object with SQLite storage. One
 instance per workspace keeps the in-memory event bus authoritative, so SSE and
 long-polling behave the same as the local server.
