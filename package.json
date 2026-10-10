@@ -12,15 +12,15 @@
     "pi-package",
     "visualization"
   ],
-  "homepage": "https://github.com/modem-dev/sideshow#readme",
+  "homepage": "https://github.com/rtavasarala/sideshow#readme",
   "bugs": {
-    "url": "https://github.com/modem-dev/sideshow/issues"
+    "url": "https://github.com/rtavasarala/sideshow/issues"
   },
   "license": "MIT",
   "author": "Ben Vinegar",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/modem-dev/sideshow.git"
+    "url": "git+https://github.com/rtavasarala/sideshow.git"
   },
   "bin": {
     "sideshow": "bin/sideshow.js"
@@ -69,6 +69,7 @@
     "start": "npm run build:viewer && node server/index.ts",
     "build:viewer": "vite build",
     "build:embed": "vite build -c viewer/vite.embed.config.ts",
+    "fonts:check": "node scripts/check-fonts.ts",
     "mcp": "node mcp/server.ts",
     "test": "npm run test:node && npm run test:viewer",
     "test:node": "node --test 'test/**/*.test.ts'",
@@ -93,7 +94,8 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.workers.json --noEmit && tsc -p tsconfig.viewer.json --noEmit",
     "clean:dist": "node scripts/clean-dist.ts",
     "build": "npm run clean:dist && tsc -p tsconfig.build.json && npm run build:viewer && npm run build:embed",
-    "deploy": "npm run build:viewer && wrangler deploy",
+    "deploy": "npm run fonts:check && npm run build:viewer && wrangler deploy",
+    "deploy:dry-run": "npm run fonts:check && npm run build:viewer && wrangler deploy --dry-run --outdir .wrangler/dry-run",
     "dev:cloud": "npm run build:viewer && wrangler dev",
     "prepack": "npm run build",
     "prepare": "simple-git-hooks && npm run build",
