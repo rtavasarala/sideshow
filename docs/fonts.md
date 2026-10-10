@@ -22,8 +22,10 @@ npm run fonts:install -- /path/to/Timeless-Type-Family
 The installer copies the required WOFF2 faces into `public/fonts/`, which is
 gitignored except for its `.gitkeep` marker.
 
-For Cloudflare deployments, install the font files before deploying so Wrangler
-includes them in its `public` assets:
+For Cloudflare deployments, install the font files so Wrangler includes them in
+its `public` assets. The deploy command runs `fonts:check` before building and
+fails if required fonts are missing. To deliberately deploy with system-font
+fallbacks, set `SIDESHOW_SYSTEM_FONTS=1`:
 
 ```sh
 npm run fonts:install -- /path/to/Timeless-Type-Family

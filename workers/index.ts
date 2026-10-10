@@ -40,7 +40,7 @@ export class SideshowBoard extends DurableObject<Env> {
       // so /p/:id.png is live — tell the viewer to enable the screenshot action.
       screenshots: true,
       version: pkg.version,
-      upgradeCommand: "git pull && npm run deploy",
+      upgradeCommand: "git pull upstream main && npm run deploy",
     });
   }
 

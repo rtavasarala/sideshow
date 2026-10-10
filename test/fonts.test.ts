@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { checkFonts } from "../scripts/check-fonts.ts";
 import { createApp, type AppOptions } from "../server/app.ts";
 import { JsonFileStore } from "../server/storage.ts";
 import { FONT_FACES } from "../server/typography.ts";
+
+const requiredFontFiles = [...new Set<string>(FONT_FACES.map(({ file }) => file))];
 
 function makeApp(options: Pick<AppOptions, "authToken" | "basePath" | "fontFile"> = {}) {
   const dir = mkdtempSync(join(tmpdir(), "sideshow-font-test-"));
@@ -73,4 +76,50 @@ test("viewer and surface font URLs include the configured base path", async () =
       'url("https://board.test/u/alice/fonts/TimelessSans-SansRegular.woff2") format("woff2")',
     ),
   );
+});
+
+test("checkFonts accepts a complete font directory", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "sideshow-font-check-test-"));
+  try {
+    for (const file of requiredFontFiles) writeFileSync(join(dir, file), "font");
+    assert.deepEqual(await checkFonts(dir), { missing: [], extra: [] });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("checkFonts reports exactly the missing required font", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "sideshow-font-check-test-"));
+  const missingFile = requiredFontFiles[0];
+  try {
+    for (const file of requiredFontFiles) writeFileSync(join(dir, file), "font");
+    unlinkSync(join(dir, missingFile));
+    assert.deepEqual(await checkFonts(dir), { missing: [missingFile], extra: [] });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("checkFonts reports extras but ignores .gitkeep", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "sideshow-font-check-test-"));
+  try {
+    for (const file of requiredFontFiles) writeFileSync(join(dir, file), "font");
+    writeFileSync(join(dir, ".gitkeep"), "");
+    writeFileSync(join(dir, "LICENSE.txt"), "license");
+    assert.deepEqual(await checkFonts(dir), { missing: [], extra: ["LICENSE.txt"] });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("checkFonts treats a nonexistent directory as entirely missing", async () => {
+  const parent = mkdtempSync(join(tmpdir(), "sideshow-font-check-test-"));
+  try {
+    assert.deepEqual(await checkFonts(join(parent, "missing")), {
+      missing: requiredFontFiles,
+      extra: [],
+    });
+  } finally {
+    rmSync(parent, { recursive: true, force: true });
+  }
 });
